@@ -7422,6 +7422,11 @@ GiveExperiencePoints: ; 3ee3b
 	bit 0, a
 	ret nz
 
+	ld a, [wPermanentOptions2]
+	and EXP_MASK
+	cp EXP_NONE
+	ret z
+
 	call .EvenlyDivideExpAmongParticipants
 	xor a
 	ld [CurPartyMon], a
@@ -7500,8 +7505,8 @@ GiveExperiencePoints: ; 3ee3b
 	inc de
 	dec c
 	jr nz, .loop1
-	ld a, [wPermanentOptions]
-	bit BW_XP, a
+	ld a, [wPermanentOptions2]
+	bit USE_BWEXP, a
 	jr z, .normalCalc
 	push hl
     push bc
@@ -7562,8 +7567,8 @@ GiveExperiencePoints: ; 3ee3b
 	call GetNick
 	ld hl, Text_PkmnGainedExpPoint
 	call BattleTextBox
-	ld a, [wPermanentOptions]
-	bit BW_XP, a
+	ld a, [wPermanentOptions2]
+	bit USE_BWEXP, a
 	jr z, .NormalEXPAddition
 	pop bc ; value needed inside
 	call BWXP_EXPAddition
@@ -7871,8 +7876,8 @@ Text_PkmnGainedExpPoint: ; 3f11b
 	text_jump Text_Gained
 	start_asm
 	
-	ld a, [wPermanentOptions]
-	bit BW_XP, a
+    ld a, [wPermanentOptions2]
+	bit USE_BWEXP, a
 	jr nz, BWXPExpGainStrings
 	
 	ld hl, TextJump_StringBuffer2ExpPoints

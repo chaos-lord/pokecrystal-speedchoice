@@ -18,7 +18,7 @@ PermaOptionsP2String:: ; e4241
 PermaOptionsP2Pointers::
 	dw Options_BetterEncSlots
 	dw Options_Gender
-	dw Options_BWXP
+	dw Options_EXPOption
 	dw Options_BetterMartsOption
 	dw Options_GoodEarlyWildsOption
 	dw Options_RaceGoalOption
@@ -72,7 +72,7 @@ Options_Gender:
 .On
 	db "HIDE@"
 
-Options_BWXP:
+Options_BWXP: ;depricated
 	ld hl, wPermanentOptions
 	and (1 << D_LEFT_F) | (1 << D_RIGHT_F)
 	ld a, [hl]
@@ -125,6 +125,80 @@ Options_GoodEarlyWildsOption:
 	call PlaceString
 	and a
 	ret
+
+Options_EXPOption: ; e44fa
+	ld hl, wPermanentOptions2
+	bit D_LEFT_F, a
+	jr nz, .LeftPressed
+	bit D_RIGHT_F, a
+	jr nz, .RightPressed
+	jr .UpdateDisplay
+
+.RightPressed
+	call .GetEXPVal
+	inc a
+	jr .Save
+
+.LeftPressed
+	call .GetEXPVal
+	dec a
+
+.Save
+	cp $ff
+	jr z, .writehigh
+	cp $04
+	jr nz, .dowrite
+; low
+	xor a
+	jr .dowrite
+.writehigh
+	ld a, $3
+.dowrite
+	sla a
+	sla a
+	ld b, a
+	ld a, [hl]
+	and EXP_MASK ^ $FF
+	or b
+	ld [hl], a
+
+.UpdateDisplay: ; e4512
+	call .GetExpVal
+	ld c, a
+	ld b, 0
+	ld hl, .Strings
+rept 2
+	add hl, bc
+endr
+	ld e, [hl]
+	inc hl
+	ld d, [hl]
+	hlcoord 11, 7
+	call PlaceString
+	and a
+	ret
+
+.GetExplVal:
+	ld a, [hl]
+	and EXP_MASK
+	srl a
+	srl a
+	ret
+
+.Strings:
+	dw .normal
+	dw .bw
+	dw .none
+	dw .negative
+
+.normal
+	db "NOR@"
+.bw
+	db "B/W@"
+.none
+	db "OFF@"
+.negative
+	db "NEG@"
 	
 Options_RaceGoalOption: ; e44fa
 	ld hl, wPermanentOptions2
